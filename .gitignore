@@ -1,0 +1,15 @@
+# Python
+*.pyc
+*~
+__pycache__
+
+# Env
+.env
+myvenv/
+venv/
+
+# Database
+Amine
+
+# Static folder at project root
+/static/
