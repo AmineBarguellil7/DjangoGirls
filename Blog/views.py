@@ -4,4 +4,4 @@ from .models import Post
 
 def ListPost(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
-    return render(request, 'blog/affiche.html', {'p': posts})
+    return render(request, 'Blog/affiche.html', {'p': posts})
