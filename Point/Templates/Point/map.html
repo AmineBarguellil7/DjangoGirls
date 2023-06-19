@@ -1,0 +1,98 @@
+{% block content %}
+<div id="map" style="height: 600px; width: 600px"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Include the Leaflet library -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
+<script>
+  var map = L.map("map").setView([51.505, -0.09], 13);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+
+  var markers = JSON.parse("{{ markers|escapejs }}");
+
+  // Now you can iterate over the markers array and display them on the map
+  for (var i = 0; i < markers.length; i++) {
+    var marker = markers[i].fields;
+    console.log(marker);
+    var latLngString = marker.location.match(/\(([^)]+)\)/)[1];
+    var [lng, lat] = latLngString.split(" ");
+    // Create a marker and add it to the map
+    var markerLayer = L.marker([lat, lng]).addTo(map);
+    markerLayer.bindPopup(marker.name);
+  }
+
+  // Handle click event on the map to add a marker
+  map.on("click", function (e) {
+    // Get the latitude and longitude of the clicked location
+    var lat = e.latlng.lat;
+    var lng = e.latlng.lng;
+    console.log(lat);
+    console.log(lng);
+
+    // Perform reverse geocoding to fetch the name of the place
+    var geocodingUrl =
+      "https://nominatim.openstreetmap.org/reverse?lat=" +
+      lat +
+      "&lon=" +
+      lng +
+      "&format=json";
+
+    $.ajax({
+      url: geocodingUrl,
+      type: "GET",
+      success: function (data) {
+        // Extract the place name from the response
+        var placeName = data.display_name;
+        console.log(placeName);
+
+        // Create a marker and add it to the map
+        var marker = L.marker([lat, lng]).addTo(map);
+
+        // Create the marker data object with the fetched place name
+        var markerData = {
+          name: placeName,
+          location: "POINT(" + lng + " " + lat + ")",
+        };
+
+        // Log the markerData object to the console
+        console.log(markerData);
+
+        // Send the marker data to the server using AJAX
+        $.ajax({
+          url: "{% url 'save_marker' %}",
+          type: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+          },
+          data: JSON.stringify(markerData),
+          success: function () {
+            console.log("Marker saved successfully");
+          },
+          error: function () {
+            console.log("Error saving marker");
+          },
+        });
+      },
+      error: function () {
+        console.log("Error retrieving place name");
+      },
+    });
+  });
+</script>
+{% endblock %}
