@@ -24,6 +24,44 @@
       '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
+
+ /*    myLocationMarker      */
+ 
+ var myLocationMarker;
+
+// Get the user's current location
+if ("geolocation" in navigator) {
+  navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError);
+}
+
+// Function to handle successful retrieval of current location
+function onLocationSuccess(position) {
+  var lat = position.coords.latitude;
+  var lng = position.coords.longitude;
+
+  // Remove the existing marker for your location if it exists
+  if (myLocationMarker) {
+    map.removeLayer(myLocationMarker);
+  }
+
+  // Create a marker for your location and add it to the map
+  myLocationMarker = L.marker([lat, lng]).addTo(map);
+  myLocationMarker.bindPopup("Your Location");
+
+  // Center the map on your location
+  // map.setView([lat, lng], 13);
+}
+
+// Function to handle errors in retrieving current location
+function onLocationError(error) {
+  console.log("Error retrieving location: " + error.message);
+}
+ /*     myLocationMarker        */
+
+
+
+
+
   var markers = JSON.parse("{{ markers|escapejs }}");
 
   // Now you can iterate over the markers array and display them on the map
