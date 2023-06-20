@@ -4,7 +4,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-from osgeo import gdal
+from osgeo import gdal 
+
+
 
 
 
@@ -24,13 +26,15 @@ ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'django.contrib.gis',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Blog',
-    'Point'
+    'Point',
+    'leaflet'
 ]
 
 MIDDLEWARE = [

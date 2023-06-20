@@ -30,4 +30,6 @@ def ShowMap(request):
     markers_json = serializers.serialize('json', markers)
     return render(request, 'Point/map.html', {'markers': markers_json})
 
+   
+
 
