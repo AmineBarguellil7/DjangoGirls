@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Blog',
     'Point',
-    'leaflet'
+    'leaflet',
 ]
 
 MIDDLEWARE = [
