@@ -1,13 +1,26 @@
 {% block content %}
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+  crossorigin="anonymous"
+/>
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+  crossorigin="anonymous"
+></script>
 <div id="map" style="height: 600px; width: 1300px"></div>
-
+<br>
+<button class="btn btn-primary" type="button" style="float:right; margin-right: 50px;">
+  <a href="/point/logout" class="text-white text-decoration-none">Sign Out</a>
+</button>
+<br>
+<br>
 
 <!-- for that dolar sign and ajax to work -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!--  for that dolar sign and ajax to work -->
-
-
-
 
 <!-- Include the Leaflet library -->
 <link
@@ -23,8 +36,6 @@
 ></script>
 <!-- Include the Leaflet library -->
 
-
-
 <!-- L is imported from leaflet.js -->
 <script>
   var map = L.map("map").setView([51.505, -0.09], 13);
@@ -34,49 +45,45 @@
       '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
+  /*    myLocationMarker      */
 
- /*    myLocationMarker      */
- 
- var myLocationMarker;
+  var myLocationMarker;
 
-// ligne hathi : Get the user's current location
-if ("geolocation" in navigator) {
-  navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError);
-}
-
-// Function to handle successful retrieval of current location
-function onLocationSuccess(position) {
-  var lat = position.coords.latitude;
-  var lng = position.coords.longitude;
-
-  // Remove the existing marker for your location if it exists
-  if (myLocationMarker) {
-    map.removeLayer(myLocationMarker);
+  // ligne hathi : Get the user's current location
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      onLocationSuccess,
+      onLocationError
+    );
   }
 
-  // Create a marker for your location and add it to the map
-  myLocationMarker = L.marker([lat, lng]).addTo(map);
-  myLocationMarker.bindPopup("Your Location");
+  // Function to handle successful retrieval of current location
+  function onLocationSuccess(position) {
+    var lat = position.coords.latitude;
+    var lng = position.coords.longitude;
 
-  // Center the map on your location
-  map.setView([lat, lng], 13);
-}
+    // Remove the existing marker for your location if it exists
+    if (myLocationMarker) {
+      map.removeLayer(myLocationMarker);
+    }
 
-// Function to handle errors in retrieving current location
-function onLocationError(error) {
-  console.log("Error retrieving location: " + error.message);
-}
- /*     myLocationMarker        */
+    // Create a marker for your location and add it to the map
+    myLocationMarker = L.marker([lat, lng]).addTo(map);
+    myLocationMarker.bindPopup("Your Location");
 
+    // Center the map on your location
+    map.setView([lat, lng], 13);
+  }
 
-
-
-
+  // Function to handle errors in retrieving current location
+  function onLocationError(error) {
+    console.log("Error retrieving location: " + error.message);
+  }
+  /*     myLocationMarker        */
 
   // ligne hathi bich thawel le objet json le objet javascript avec conversion des caracteres speciaux
   var markers = JSON.parse("{{ markers|escapejs }}");
 
-  
   for (var i = 0; i < markers.length; i++) {
     var marker = markers[i].fields;
     var latLngString = marker.location.match(/\(([^)]+)\)/)[1];
@@ -84,11 +91,10 @@ function onLocationError(error) {
     var [lng, lat] = latLngString.split(" ");
     //  ligne hathi ta3mel : Create a marker and add it to the map
     var markerLayer = L.marker([lat, lng]).addTo(map);
-    // ligne hathi ki nenzel 3al localisation yokhrog ism le blassa fel ecran 
+    // ligne hathi ki nenzel 3al localisation yokhrog ism le blassa fel ecran
     markerLayer.bindPopup(marker.name);
   }
 
-  
   map.on("click", function (e) {
     //  ligne hathi : Get the latitude and longitude of the clicked location
     var lat = e.latlng.lat;
@@ -118,8 +124,6 @@ function onLocationError(error) {
           name: placeName,
           location: "POINT(" + lng + " " + lat + ")",
         };
-
-        
 
         // Send the marker data to the server using AJAX
         $.ajax({
