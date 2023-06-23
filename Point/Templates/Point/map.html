@@ -18,9 +18,6 @@
 <br>
 <br>
 
-<!-- for that dolar sign and ajax to work -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!--  for that dolar sign and ajax to work -->
 
 <!-- Include the Leaflet library -->
 <link
@@ -36,6 +33,19 @@
 ></script>
 <!-- Include the Leaflet library -->
 
+
+
+<!-- for that dolar sign and ajax to work -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!--  for that dolar sign and ajax to work -->
+
+<!-- Include leaflet draw -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+<script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+<!-- Include leaflet draw -->
+
+
+
 <!-- L is imported from leaflet.js -->
 <script>
   var map = L.map("map").setView([51.505, -0.09], 13);
@@ -44,6 +54,16 @@
     attribution:
       '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
+
+
+ // Create a Leaflet.draw control and add it to the map
+ var drawControl = new L.Control.Draw({
+    draw: {
+      marker: true, 
+    },
+  });
+  map.addControl(drawControl);
+
 
   /*    myLocationMarker      */
 
@@ -95,6 +115,9 @@
     markerLayer.bindPopup(marker.name);
   }
 
+
+
+  //save the marker by clicking
   map.on("click", function (e) {
     //  ligne hathi : Get the latitude and longitude of the clicked location
     var lat = e.latlng.lat;
@@ -146,5 +169,79 @@
       },
     });
   });
+  //save the marker by clicking
+
+
+
+  // handle marker creation using toolbar
+
+  function handleMarkerCreation(e) {
+    var marker = e.layer;
+
+    // Get the marker's coordinates
+    var lat = marker.getLatLng().lat;
+    var lng = marker.getLatLng().lng;
+
+
+    var geocodingUrl =
+      "https://nominatim.openstreetmap.org/reverse?lat=" +
+      lat +
+      "&lon=" +
+      lng +
+      "&format=json";
+
+
+      
+
+      $.ajax({
+    url: geocodingUrl,
+    type: "GET",
+    success: function (data) {
+      // Extract the place name from the response
+      var placeName = data.display_name;
+      console.log(placeName);
+
+      // Create the marker data object with the fetched place name
+      var markerData = {
+        name: placeName,
+        location: "POINT(" + lng + " " + lat + ")",
+      };
+
+      // Send the marker data to the server using AJAX
+      $.ajax({
+        url: "{% url 'save_marker' %}",
+        type: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        data: JSON.stringify(markerData),
+        success: function () {
+          console.log("Marker saved successfully");
+          marker.addTo(map);
+        },
+        error: function () {
+          console.log("Error saving marker");
+        },
+      });
+    },
+    error: function () {
+      console.log("Error retrieving place name");
+    },
+  });
+}
+
+map.on(L.Draw.Event.CREATED, handleMarkerCreation);
+
+
+  // handle marker creation using toolbar
+
+
+
+
+
+
+
+
+
 </script>
 {% endblock %}

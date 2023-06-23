@@ -26,6 +26,11 @@
     </style>
 </head>
 <body>
+    <style>
+        body {
+          background-color: #f2f2f2;
+        }
+      </style>
 
     {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -34,12 +39,12 @@
     {% endfor %}
 
     <div class="container">
-        <h3>Create your account!</h3>
+        <h3 style="color: red;">Create your account!</h3>
         <form method="post" action="">
             {% csrf_token %}
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Create A Username (use only letters and numbers)" required>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Create A Username" required>
             </div>
             <div class="form-group">
                 <label for="fname">First Name</label>
@@ -62,7 +67,7 @@
                 <input type="password" class="form-control" id="pass2" name="pass2" placeholder="Confirm Your Password" required>
             </div>
             <br>
-            <button type="submit" class="btn btn-primary">Sign Up</button>
+            <button type="submit" class="btn btn-info">Sign Up</button>
         </form>
     </div>
 </body>
