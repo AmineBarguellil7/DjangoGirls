@@ -58,10 +58,11 @@
 
  // Create a Leaflet.draw control and add it to the map
  var drawControl = new L.Control.Draw({
-    draw: {
-      marker: true, 
-    },
-  });
+  draw: {
+    marker: true, // Enable marker drawing
+    polygon: true, // Enable polygon drawing
+  },
+});
   map.addControl(drawControl);
 
 
@@ -107,7 +108,6 @@
   for (var i = 0; i < markers.length; i++) {
     var marker = markers[i].fields;
     var latLngString = marker.location.match(/\(([^)]+)\)/)[1];
-    console.log(marker.location);
     var [lng, lat] = latLngString.split(" ");
     //  ligne hathi ta3mel : Create a marker and add it to the map
     var markerLayer = L.marker([lat, lng]).addTo(map);
@@ -118,57 +118,57 @@
 
 
   //save the marker by clicking
-  map.on("click", function (e) {
-    //  ligne hathi : Get the latitude and longitude of the clicked location
-    var lat = e.latlng.lat;
-    var lng = e.latlng.lng;
+  // map.on("click", function (e) {
+  //   //  ligne hathi : Get the latitude and longitude of the clicked location
+  //   var lat = e.latlng.lat;
+  //   var lng = e.latlng.lng;
 
-    // ligne hathi biha najem nfetchi ism le marker
-    var geocodingUrl =
-      "https://nominatim.openstreetmap.org/reverse?lat=" +
-      lat +
-      "&lon=" +
-      lng +
-      "&format=json";
+  //   // ligne hathi biha najem nfetchi ism le marker
+  //   var geocodingUrl =
+  //     "https://nominatim.openstreetmap.org/reverse?lat=" +
+  //     lat +
+  //     "&lon=" +
+  //     lng +
+  //     "&format=json";
 
-    $.ajax({
-      url: geocodingUrl,
-      type: "GET",
-      success: function (data) {
-        // Extract the place name from the response
-        var placeName = data.display_name;
-        console.log(placeName);
+  //   $.ajax({
+  //     url: geocodingUrl,
+  //     type: "GET",
+  //     success: function (data) {
+  //       // Extract the place name from the response
+  //       var placeName = data.display_name;
+  //       console.log(placeName);
 
-        // Create a marker and add it to the map
-        var marker = L.marker([lat, lng]).addTo(map);
+  //       // Create a marker and add it to the map
+  //       var marker = L.marker([lat, lng]).addTo(map);
 
-        // Create the marker data object with the fetched place name
-        var markerData = {
-          name: placeName,
-          location: "POINT(" + lng + " " + lat + ")",
-        };
+  //       // Create the marker data object with the fetched place name
+  //       var markerData = {
+  //         name: placeName,
+  //         location: "POINT(" + lng + " " + lat + ")",
+  //       };
 
-        // Send the marker data to the server using AJAX
-        $.ajax({
-          url: "{% url 'save_marker' %}",
-          type: "POST",
-          headers: {
-            "X-CSRFToken": "{{ csrf_token }}",
-          },
-          data: JSON.stringify(markerData),
-          success: function () {
-            console.log("Marker saved successfully");
-          },
-          error: function () {
-            console.log("Error saving marker");
-          },
-        });
-      },
-      error: function () {
-        console.log("Error retrieving place name");
-      },
-    });
-  });
+  //       // Send the marker data to the server using AJAX
+  //       $.ajax({
+  //         url: "{% url 'save_marker' %}",
+  //         type: "POST",
+  //         headers: {
+  //           "X-CSRFToken": "{{ csrf_token }}",
+  //         },
+  //         data: JSON.stringify(markerData),
+  //         success: function () {
+  //           console.log("Marker saved successfully");
+  //         },
+  //         error: function () {
+  //           console.log("Error saving marker");
+  //         },
+  //       });
+  //     },
+  //     error: function () {
+  //       console.log("Error retrieving place name");
+  //     },
+  //   });
+  // });
   //save the marker by clicking
 
 
@@ -230,7 +230,7 @@
   });
 }
 
-map.on(L.Draw.Event.CREATED, handleMarkerCreation);
+// map.on(L.Draw.Event.CREATED, handleMarkerCreation);
 
 
   // handle marker creation using toolbar
@@ -238,6 +238,58 @@ map.on(L.Draw.Event.CREATED, handleMarkerCreation);
 
 
 
+  function handlePolygonCreation(e) {
+  var polygon = e.layer;
+  
+  var latLngs = polygon.getLatLngs();
+
+  console.log(latLngs);
+  console.log(latLngs.length);
+
+  var polygonData = {
+    location: [], 
+  };
+
+  for (var i = 0; i < latLngs[0].length; i++) {
+    var lat = latLngs[0][i].lat;
+    var lng = latLngs[0][i].lng;
+    polygonData.location.push([lng, lat]);
+  }
+
+  var firstLatLng = latLngs[0][0];
+  polygonData.location.push([firstLatLng.lng, firstLatLng.lat]);
+  
+  // Send the polygon data to the server using AJAX
+  $.ajax({
+    url: "{% url 'save_polygon' %}",
+    type: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}",
+    },
+    data: JSON.stringify(polygonData),
+    success: function(response) {
+      if (response.status === 'success') {
+        polygon.addTo(map);
+      } else {
+        console.log('Error: ' + response.status);
+      }
+    }
+  });
+}
+
+
+// map.on(L.Draw.Event.CREATED, handlePolygonCreation);
+
+
+// Event listener for marker and polygon creation
+map.on("draw:created", function (e) {
+  var type = e.layerType;
+  if (type === "marker") {
+    handleMarkerCreation(e);
+  } else if (type === "polygon") {
+    handlePolygonCreation(e);
+  }
+});
 
 
 
