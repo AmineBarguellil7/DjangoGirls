@@ -46,9 +46,7 @@ def save_polygon(request):
                 polygon_coords.append((coord[0], coord[1]))
             polygon_geom = Polygon(polygon_coords)
             polygon_obj = Polygone.objects.create(location=polygon_geom)
-            print(polygon_coords)
             surface_area = calculate_polygon_area(polygon_coords) 
-            print('Surface Area:', surface_area)
-            return JsonResponse({'status': 'success'})
+            return JsonResponse({'status': 'success', 'surface_area': surface_area})
     return JsonResponse({'status': 'error'})
  

@@ -288,6 +288,8 @@
     success: function(response) {
       if (response.status === 'success') {
         polygon.addTo(map);
+        var surfaceArea = response.surface_area;
+        alert("Polygon added successfully. Surface Area: " + surfaceArea);
       } else {
         console.log('Error: ' + response.status);
       }
