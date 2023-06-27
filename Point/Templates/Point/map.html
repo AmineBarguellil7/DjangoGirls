@@ -104,6 +104,7 @@
 
   // ligne hathi bich thawel le objet json le objet javascript avec conversion des caracteres speciaux
   var markers = JSON.parse("{{ markers|escapejs }}");
+  var polygons = JSON.parse("{{ polygons|escapejs }}");
 
   for (var i = 0; i < markers.length; i++) {
     var marker = markers[i].fields;
@@ -114,6 +115,23 @@
     // ligne hathi ki nenzel 3al localisation yokhrog ism le blassa fel ecran
     markerLayer.bindPopup(marker.name);
   }
+
+
+
+  for (var i = 0; i < polygons.length; i++) {
+  var polygon = polygons[i].fields;
+  var locationString = polygon.location;
+  var coordinatesString = locationString.match(/\(\(([^)]+)\)\)/)[1];
+  var coordinatesArray = coordinatesString.split(", ").map(function(coord) {
+    var [lng, lat] = coord.split(" ");
+    return [parseFloat(lat), parseFloat(lng)];
+  });
+  // Create a polygon and add it to the map
+  var polygonLayer = L.polygon(coordinatesArray).addTo(map);
+  // Add any additional styling or popup information to the polygon layer
+  polygonLayer.bindPopup(polygon.name);
+}
+
 
 
 

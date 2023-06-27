@@ -11,8 +11,10 @@ import json
 def ShowMap(request):
     if request.user.is_authenticated:
         markers = Marker.objects.all()
+        polygons = Polygone.objects.all()
         markers_json = serializers.serialize('json', markers)
-        return render(request, 'Point/map.html', {'markers': markers_json})
+        polygons_json = serializers.serialize('json', polygons)
+        return render(request, 'Point/map.html', {'markers': markers_json , 'polygons': polygons_json})
     else:
         return render(request, 'Point/error.html')  
 
