@@ -4,6 +4,7 @@ from django.core import serializers
 from .models import Polygone
 from django.contrib.gis.geos import Polygon
 from django.http import JsonResponse
+from django.contrib.gis.db.models.functions import Area
 
 
 import json
@@ -20,22 +21,6 @@ def ShowMap(request):
 
 
 
-import pyproj
-
-def calculate_polygon_area(vertices):
-    lats, lons = zip(*vertices)
-    lats = list(lats)
-    lons = list(lons)
-    lats.reverse()  
-    lons.reverse()  
-    area = pyproj.Geod(ellps='WGS84').polygon_area_perimeter(lats, lons)
-    print(area)
-    return area[0]
-
-
-
-
-
 def save_polygon(request):
     if request.method == 'POST':
         polygon_data = json.loads(request.body)
@@ -46,7 +31,7 @@ def save_polygon(request):
                 polygon_coords.append((coord[0], coord[1]))
             polygon_geom = Polygon(polygon_coords)
             polygon_obj = Polygone.objects.create(location=polygon_geom)
-            surface_area = calculate_polygon_area(polygon_coords) 
+            surface_area = polygon_obj.location.area
             return JsonResponse({'status': 'success', 'surface_area': surface_area})
     return JsonResponse({'status': 'error'})
  
