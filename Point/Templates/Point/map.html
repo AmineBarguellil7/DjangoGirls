@@ -11,13 +11,16 @@
   crossorigin="anonymous"
 ></script>
 <div id="map" style="height: 600px; width: 1300px"></div>
-<br>
-<button class="btn btn-primary" type="button" style="float:right; margin-right: 50px;">
+<br />
+<button
+  class="btn btn-primary"
+  type="button"
+  style="float: right; margin-right: 50px"
+>
   <a href="/point/logout" class="text-white text-decoration-none">Sign Out</a>
 </button>
-<br>
-<br>
-
+<br />
+<br />
 
 <!-- Include the Leaflet library -->
 <link
@@ -33,18 +36,17 @@
 ></script>
 <!-- Include the Leaflet library -->
 
-
-
 <!-- for that dolar sign and ajax to work -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!--  for that dolar sign and ajax to work -->
 
 <!-- Include leaflet draw -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css"
+/>
 <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
 <!-- Include leaflet draw -->
-
-
 
 <!-- L is imported from leaflet.js -->
 <script>
@@ -55,16 +57,14 @@
       '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
-
- // Create a Leaflet.draw control and add it to the map
- var drawControl = new L.Control.Draw({
-  draw: {
-    marker: true, // Enable marker drawing
-    polygon: true, // Enable polygon drawing
-  },
-});
+  // Create a Leaflet.draw control and add it to the map
+  var drawControl = new L.Control.Draw({
+    draw: {
+      marker: true, // Enable marker drawing
+      polygon: true, // Enable polygon drawing
+    },
+  });
   map.addControl(drawControl);
-
 
   /*    myLocationMarker      */
 
@@ -102,38 +102,46 @@
   }
   /*     myLocationMarker        */
 
-  // ligne hathi bich thawel le objet json le objet javascript avec conversion des caracteres speciaux
-  var markers = JSON.parse("{{ markers|escapejs }}");
-  var polygons = JSON.parse("{{ polygons|escapejs }}");
+  var markers, polygons;
 
-  for (var i = 0; i < markers.length; i++) {
-    var marker = markers[i].fields;
-    var latLngString = marker.location.match(/\(([^)]+)\)/)[1];
-    var [lng, lat] = latLngString.split(" ");
-    //  ligne hathi ta3mel : Create a marker and add it to the map
-    var markerLayer = L.marker([lat, lng]).addTo(map);
-    // ligne hathi ki nenzel 3al localisation yokhrog ism le blassa fel ecran
-    markerLayer.bindPopup(marker.name);
+  if ("{{ markers }}") {
+    // ligne hathi bich thawel le objet json le objet javascript avec conversion des caracteres speciaux
+    markers = JSON.parse("{{ markers|escapejs }}");
   }
 
+  if ("{{ polygons }}") {
+    polygons = JSON.parse("{{ polygons|escapejs }}");
+  }
 
+  if (markers) {
+    for (var i = 0; i < markers.length; i++) {
+      var marker = markers[i].fields;
+      var latLngString = marker.location.match(/\(([^)]+)\)/)[1];
+      var [lng, lat] = latLngString.split(" ");
+      //  ligne hathi ta3mel : Create a marker and add it to the map
+      var markerLayer = L.marker([lat, lng]).addTo(map);
+      // ligne hathi ki nenzel 3al localisation yokhrog ism le blassa fel ecran
+      markerLayer.bindPopup(marker.name);
+    }
+  }
 
-  for (var i = 0; i < polygons.length; i++) {
-  var polygon = polygons[i].fields;
-  var locationString = polygon.location;
-  var coordinatesString = locationString.match(/\(\(([^)]+)\)\)/)[1];
-  var coordinatesArray = coordinatesString.split(", ").map(function(coord) {
-    var [lng, lat] = coord.split(" ");
-    return [parseFloat(lat), parseFloat(lng)];
-  });
-  // Create a polygon and add it to the map
-  var polygonLayer = L.polygon(coordinatesArray).addTo(map);
-  // Add any additional styling or popup information to the polygon layer
-  polygonLayer.bindPopup(polygon.name);
-}
-
-
-
+  if (polygons) {
+    for (var i = 0; i < polygons.length; i++) {
+      var polygon = polygons[i].fields;
+      var locationString = polygon.location;
+      var coordinatesString = locationString.match(/\(\(([^)]+)\)\)/)[1];
+      var coordinatesArray = coordinatesString
+        .split(", ")
+        .map(function (coord) {
+          var [lng, lat] = coord.split(" ");
+          return [parseFloat(lat), parseFloat(lng)];
+        });
+      // Create a polygon and add it to the map
+      var polygonLayer = L.polygon(coordinatesArray).addTo(map);
+      // Add any additional styling or popup information to the polygon layer
+      polygonLayer.bindPopup(polygon.name);
+    }
+  }
 
   //save the marker by clicking
   // map.on("click", function (e) {
@@ -189,8 +197,6 @@
   // });
   //save the marker by clicking
 
-
-
   // handle marker creation using toolbar
 
   function handleMarkerCreation(e) {
@@ -200,7 +206,6 @@
     var lat = marker.getLatLng().lat;
     var lng = marker.getLatLng().lng;
 
-
     var geocodingUrl =
       "https://nominatim.openstreetmap.org/reverse?lat=" +
       lat +
@@ -208,112 +213,98 @@
       lng +
       "&format=json";
 
+    $.ajax({
+      url: geocodingUrl,
+      type: "GET",
+      success: function (data) {
+        // Extract the place name from the response
+        var placeName = data.display_name;
+        console.log(placeName);
 
-      
+        // Create the marker data object with the fetched place name
+        var markerData = {
+          name: placeName,
+          location: "POINT(" + lng + " " + lat + ")",
+        };
 
-      $.ajax({
-    url: geocodingUrl,
-    type: "GET",
-    success: function (data) {
-      // Extract the place name from the response
-      var placeName = data.display_name;
-      console.log(placeName);
+        // Send the marker data to the server using AJAX
+        $.ajax({
+          url: "{% url 'save_marker' %}",
+          type: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+          },
+          data: JSON.stringify(markerData),
+          success: function () {
+            console.log("Marker saved successfully");
+            marker.addTo(map);
+          },
+          error: function () {
+            console.log("Error saving marker");
+          },
+        });
+      },
+      error: function () {
+        console.log("Error retrieving place name");
+      },
+    });
+  }
 
-      // Create the marker data object with the fetched place name
-      var markerData = {
-        name: placeName,
-        location: "POINT(" + lng + " " + lat + ")",
-      };
-
-      // Send the marker data to the server using AJAX
-      $.ajax({
-        url: "{% url 'save_marker' %}",
-        type: "POST",
-        headers: {
-          "X-CSRFToken": "{{ csrf_token }}",
-        },
-        data: JSON.stringify(markerData),
-        success: function () {
-          console.log("Marker saved successfully");
-          marker.addTo(map);
-        },
-        error: function () {
-          console.log("Error saving marker");
-        },
-      });
-    },
-    error: function () {
-      console.log("Error retrieving place name");
-    },
-  });
-}
-
-// map.on(L.Draw.Event.CREATED, handleMarkerCreation);
-
+  // map.on(L.Draw.Event.CREATED, handleMarkerCreation);
 
   // handle marker creation using toolbar
 
-
-
-
   function handlePolygonCreation(e) {
-  var polygon = e.layer;
-  
-  var latLngs = polygon.getLatLngs();
+    var polygon = e.layer;
 
-  console.log(latLngs);
-  console.log(latLngs.length);
+    var latLngs = polygon.getLatLngs();
 
-  var polygonData = {
-    location: [], 
-  };
+    console.log(latLngs);
+    console.log(latLngs.length);
 
-  for (var i = 0; i < latLngs[0].length; i++) {
-    var lat = latLngs[0][i].lat;
-    var lng = latLngs[0][i].lng;
-    polygonData.location.push([lng, lat]);
+    var polygonData = {
+      location: [],
+    };
+
+    for (var i = 0; i < latLngs[0].length; i++) {
+      var lat = latLngs[0][i].lat;
+      var lng = latLngs[0][i].lng;
+      polygonData.location.push([lng, lat]);
+    }
+
+    var firstLatLng = latLngs[0][0];
+    polygonData.location.push([firstLatLng.lng, firstLatLng.lat]);
+
+    // Send the polygon data to the server using AJAX
+    $.ajax({
+      url: "{% url 'save_polygon' %}",
+      type: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+      },
+      data: JSON.stringify(polygonData),
+      success: function (response) {
+        if (response.status === "success") {
+          polygon.addTo(map);
+          var surfaceArea = response.surface_area;
+          alert("Polygon added successfully. Surface Area: " + surfaceArea);
+        } else {
+          console.log("Error: " + response.status);
+        }
+      },
+    });
   }
 
-  var firstLatLng = latLngs[0][0];
-  polygonData.location.push([firstLatLng.lng, firstLatLng.lat]);
-  
-  // Send the polygon data to the server using AJAX
-  $.ajax({
-    url: "{% url 'save_polygon' %}",
-    type: "POST",
-    headers: {
-      "X-CSRFToken": "{{ csrf_token }}",
-    },
-    data: JSON.stringify(polygonData),
-    success: function(response) {
-      if (response.status === 'success') {
-        polygon.addTo(map);
-        var surfaceArea = response.surface_area;
-        alert("Polygon added successfully. Surface Area: " + surfaceArea);
-      } else {
-        console.log('Error: ' + response.status);
-      }
+  // map.on(L.Draw.Event.CREATED, handlePolygonCreation);
+
+  // Event listener for marker and polygon creation
+  map.on("draw:created", function (e) {
+    var type = e.layerType;
+    if (type === "marker") {
+      handleMarkerCreation(e);
+    } else if (type === "polygon") {
+      handlePolygonCreation(e);
     }
   });
-}
-
-
-// map.on(L.Draw.Event.CREATED, handlePolygonCreation);
-
-
-// Event listener for marker and polygon creation
-map.on("draw:created", function (e) {
-  var type = e.layerType;
-  if (type === "marker") {
-    handleMarkerCreation(e);
-  } else if (type === "polygon") {
-    handlePolygonCreation(e);
-  }
-});
-
-
-
-
-
 </script>
 {% endblock %}
