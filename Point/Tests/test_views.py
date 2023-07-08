@@ -24,7 +24,7 @@ class TestViews(TestCase):
         self.assertTemplateUsed(response, "Point/map.html")
 
 
-    def test_marker_save_post(self):
+    def test_marker_home(self):
         response=self.client.get(self.Home_url)
         self.assertEquals(response.status_code,200)
         self.assertTemplateUsed(response, "Point/Home.html")
