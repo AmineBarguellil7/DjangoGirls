@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-*jtap1l)uqjfbqs_)_-dfp+dzi-4_i1o$7jkxws=efqb3rq)r2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com']
+ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1', '.pythonanywhere.com']
 
 
 # Application definition
@@ -79,6 +79,8 @@ DATABASES = {
         'PORT': '5433'
     }
 }
+
+
 
 
 # Password validation

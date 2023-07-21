@@ -1,0 +1,15 @@
+asgiref==3.7.2
+certifi==2023.5.7
+colorama==0.4.6
+Django==4.2.2
+django-leaflet==0.29.0
+django-leaflet-admin-list==0.0.7
+geographiclib==2.0
+geopy==2.3.0
+iniconfig==2.0.0
+packaging==23.1
+pluggy==1.2.0
+psycopg2==2.9.6
+pytest==7.4.0
+sqlparse==0.4.4
+tzdata==2023.3
